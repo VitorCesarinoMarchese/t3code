@@ -23,6 +23,7 @@ describe("codexRateLimitsToLimits", () => {
       }),
     ).toEqual({
       checkedAt,
+      plan: "plus",
       windows: [
         {
           id: "primary",

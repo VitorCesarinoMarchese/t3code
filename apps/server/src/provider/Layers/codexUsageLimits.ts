@@ -26,6 +26,15 @@ interface CodexRateLimitWindow {
 
 /** Structural view of the generated `RateLimitSnapshot`; both messages satisfy it. */
 export interface CodexRateLimitSnapshot {
+  readonly credits?: {
+    readonly balance?: string | null;
+    readonly hasCredits: boolean;
+    readonly unlimited: boolean;
+  } | null;
+  readonly individualLimit?: {
+    readonly remainingPercent: number;
+    readonly resetsAt: number;
+  } | null;
   readonly planType?: string | null;
   readonly primary?: CodexRateLimitWindow | null;
   readonly secondary?: CodexRateLimitWindow | null;
@@ -114,11 +123,32 @@ export function codexRateLimitsToLimits(input: {
   readonly checkedAt: string;
 }): ServerProviderUsageLimits {
   const resetCredits = codexResetCreditsToContract(input.resetCredits);
+  const individualLimit = input.snapshot.individualLimit;
   return {
     ...makeUsageLimits({
       checkedAt: input.checkedAt,
       windows: codexRateLimitsToWindows(input.snapshot),
     }),
+    ...(input.snapshot.planType ? { plan: input.snapshot.planType } : {}),
+    ...(input.snapshot.credits
+      ? {
+          credits: {
+            hasCredits: input.snapshot.credits.hasCredits,
+            unlimited: input.snapshot.credits.unlimited,
+            ...(input.snapshot.credits.balance != null
+              ? { balance: input.snapshot.credits.balance }
+              : {}),
+          },
+        }
+      : {}),
+    ...(individualLimit && Number.isFinite(individualLimit.remainingPercent)
+      ? {
+          usageLimit: {
+            remainingPercent: clampPercent(individualLimit.remainingPercent),
+            resetsAt: isoFromEpochSeconds(individualLimit.resetsAt) ?? input.checkedAt,
+          },
+        }
+      : {}),
     ...(resetCredits ? { resetCredits } : {}),
   };
 }

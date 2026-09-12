@@ -226,6 +226,12 @@ function getWindowTitleBarOptions(
   shouldUseDarkColors: boolean,
   platform: NodeJS.Platform,
 ): WindowTitleBarOptions {
+  if (platform === "linux") {
+    return {
+      titleBarStyle: "hidden",
+    };
+  }
+
   if (platform === "darwin") {
     return {
       titleBarStyle: "hiddenInset",
@@ -367,6 +373,7 @@ export const make = Effect.gen(function* () {
       minHeight: 620,
       show: false,
       autoHideMenuBar: true,
+      ...(environment.platform === "linux" ? { frame: false } : {}),
       ...(environment.platform === "darwin" ? { disableAutoHideCursor: true } : {}),
       backgroundColor: getInitialWindowBackgroundColor(shouldUseDarkColors),
       ...iconOption,

@@ -279,9 +279,10 @@ export const getPreviewConfig = DesktopIpc.makeIpcMethod({
     // Creating the session first is what installs the UA rewrite and permission
     // handlers; a guest that attached to an untouched partition would run with
     // Electron's default UA and Chromium's default permission behaviour.
-    yield* manager.getBrowserSession(scope, persistent, namespace);
+    const browserSession = yield* manager.getBrowserSession(scope, persistent, namespace);
     return {
       partition: yield* manager.getBrowserPartition(scope, persistent, namespace),
+      userAgent: browserSession.getUserAgent(),
       webPreferences: PREVIEW_WEBVIEW_PREFERENCES,
       preloadUrl: NodeURL.pathToFileURL(`${__dirname}/preview-pick-preload.cjs`).href,
     };

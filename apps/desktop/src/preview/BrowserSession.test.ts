@@ -32,6 +32,15 @@ import * as BrowserSession from "./BrowserSession.ts";
 const layer = BrowserSession.layer.pipe(Layer.provide(NodeServices.layer));
 
 describe("BrowserSession", () => {
+  it("removes complete Electron and product tokens from preview user agents", () => {
+    assert.strictEqual(
+      BrowserSession.normalizePreviewUserAgent(
+        "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) t3code/0.0.38-nightly.1 Chrome/134.0.0.0 Electron/43.4.1 Safari/537.36",
+      ),
+      "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+    );
+  });
+
   beforeEach(() => {
     sessions.clear();
     fromPartition.mockReset();
@@ -39,7 +48,10 @@ describe("BrowserSession", () => {
       const browserSession = {
         clearCache: vi.fn(() => Promise.resolve()),
         clearStorageData: vi.fn(() => Promise.resolve()),
-        getUserAgent: vi.fn(() => "Mozilla/5.0 Electron/41.5.0 t3code/0.0.27"),
+        getUserAgent: vi.fn(
+          () =>
+            "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) T3Code(Alpha)/0.0.38 Chrome/150.0.7871.224 Electron/43.4.1 Safari/537.36",
+        ),
         setPermissionRequestHandler: vi.fn(),
         setPermissionCheckHandler: vi.fn(),
         setUserAgent: vi.fn(),
@@ -60,6 +72,10 @@ describe("BrowserSession", () => {
       assert.strictEqual(partition, "persist:t3code-preview-f051bb2c68cb7b2fe969");
       assert.strictEqual(first, second);
       assert.strictEqual(fromPartition.mock.calls.length, 1);
+      assert.strictEqual(
+        sessions.get(partition)?.setUserAgent.mock.calls[0]?.[0],
+        "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.7871.224 Safari/537.36",
+      );
     }).pipe(Effect.provide(layer)),
   );
 

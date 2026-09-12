@@ -72,6 +72,7 @@ beforeEach(() => {
   mocks.registerWebview.mockReset().mockResolvedValue(undefined);
   mocks.getPreviewConfig.mockReset().mockResolvedValue({
     partition: "persist:t3-preview-work",
+    userAgent: "Mozilla/5.0 Chrome/134.0.0.0 Safari/537.36",
     webPreferences: "contextIsolation=yes",
     preloadUrl: null,
   });

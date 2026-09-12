@@ -86,7 +86,7 @@ export function UsagePage() {
     days: 30,
     window: makeWindow(30),
   }));
-  const [metric, setMetric] = useState<UsageMetric>("cost");
+  const [metric, setMetric] = useState<UsageMetric>("limits");
   const showingLimits = metric === "limits";
   const [breakdown, setBreakdown] = useState<"model" | "time">("model");
   const [selectedEnvironmentIds, setSelectedEnvironmentIds] =
@@ -138,15 +138,13 @@ export function UsagePage() {
     });
   };
   const refreshWindow = () => {
-    if (showingLimits) {
-      for (const [environmentId, presentation] of presentations) {
-        if (selectedEnvironmentIds !== null && !selectedEnvironmentIds.has(environmentId)) continue;
-        if (presentation.connection.phase === "connected" && presentation.serverConfig !== null) {
-          void refreshProviders({ environmentId, input: {} });
-        }
+    for (const [environmentId, presentation] of presentations) {
+      if (selectedEnvironmentIds !== null && !selectedEnvironmentIds.has(environmentId)) continue;
+      if (presentation.connection.phase === "connected" && presentation.serverConfig !== null) {
+        void refreshProviders({ environmentId, input: {} });
       }
-      return;
     }
+    if (showingLimits) return;
     const nextWindow = makeWindow(windowDays, undefined, isPast24Hours ? "hour" : "day");
     if (
       nextWindow.sinceDay === window.sinceDay &&
@@ -307,7 +305,15 @@ export function UsagePage() {
                   : `Select an environment to see ${showingLimits ? "limits" : "usage"}.`}
               </p>
             ) : showingLimits ? (
-              <UsageLimitsSection selectedEnvironmentIds={selectedEnvironmentIds} />
+              <section className="flex flex-col gap-4">
+                <div>
+                  <h2 className="text-base font-medium text-foreground">Plan usage</h2>
+                  <p className="text-xs text-muted-foreground">
+                    ChatGPT/Codex subscription limits, separate from API cost estimates.
+                  </p>
+                </div>
+                <UsageLimitsSection selectedEnvironmentIds={selectedEnvironmentIds} />
+              </section>
             ) : isPending ? (
               <UsageSkeleton />
             ) : (

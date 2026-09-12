@@ -19,17 +19,7 @@ import { ChevronDownIcon, FolderClosedIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { Group, GroupSeparator } from "../ui/group";
 import { Menu, MenuItem, MenuPopup, MenuShortcut, MenuTrigger } from "../ui/menu";
-import {
-  AntigravityIcon,
-  CursorIcon,
-  Icon,
-  KiroIcon,
-  TraeIcon,
-  VisualStudioCode,
-  VisualStudioCodeInsiders,
-  VSCodium,
-  Zed,
-} from "../Icons";
+import { AntigravityIcon, CursorIcon, Icon, KiroIcon, NeovimIcon, TraeIcon, Zed } from "../Icons";
 import {
   AquaIcon,
   CLionIcon,
@@ -73,18 +63,8 @@ const resolveOptions = (platform: string, availableEditors: ReadonlyArray<Editor
       kind: "brand",
     },
     {
-      Icon: VisualStudioCode,
-      value: "vscode",
-      kind: "brand",
-    },
-    {
-      Icon: VisualStudioCodeInsiders,
-      value: "vscode-insiders",
-      kind: "brand",
-    },
-    {
-      Icon: VSCodium,
-      value: "vscodium",
+      Icon: NeovimIcon,
+      value: "nvim",
       kind: "brand",
     },
     {

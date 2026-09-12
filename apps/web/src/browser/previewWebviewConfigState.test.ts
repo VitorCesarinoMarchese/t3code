@@ -43,6 +43,7 @@ describe("loadPreviewWebviewConfig", () => {
       let requested: { environmentId: EnvironmentId; profileId: string | undefined } | null = null;
       const config = {
         partition: "persist:test-preview",
+        userAgent: "Mozilla/5.0 Chrome/134.0.0.0 Safari/537.36",
         webPreferences: "sandbox=yes",
         preloadUrl: null,
       };

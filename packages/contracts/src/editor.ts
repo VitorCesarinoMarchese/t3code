@@ -29,6 +29,13 @@ export const EDITORS = [
   { id: "trae", label: "Trae", commands: ["trae"], launchStyle: "goto" },
   { id: "kiro", label: "Kiro", commands: ["kiro"], baseArgs: ["ide"], launchStyle: "goto" },
   {
+    id: "nvim",
+    label: "Neovim",
+    commands: ["kitty"],
+    baseArgs: ["nvim", "--"],
+    launchStyle: "direct-path",
+  },
+  {
     id: "vscode",
     label: "VS Code",
     commands: ["code"],

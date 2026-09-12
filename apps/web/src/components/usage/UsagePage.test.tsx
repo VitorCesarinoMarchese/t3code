@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const testState = vi.hoisted(() => ({
   useUsage: vi.fn(),
-  metric: "cost" as "cost" | "tokens",
+  metric: "cost" as "cost" | "tokens" | "limits",
   breakdown: "time" as "model" | "time",
 }));
 
@@ -26,7 +26,7 @@ vi.mock("react", async (importOriginal) => {
               untilTime: "2026-08-11T12:37:00.000Z",
             },
           }
-        : initial === "cost"
+        : initial === "cost" || initial === "limits"
           ? testState.metric
           : initial === "model"
             ? testState.breakdown

@@ -158,10 +158,12 @@ function LimitWindows({
   driver,
   windows,
   now,
+  showRemaining = false,
 }: {
   readonly driver: ServerProvider["driver"];
   readonly windows: ReadonlyArray<ServerProviderUsageWindow>;
   readonly now: number;
+  readonly showRemaining?: boolean;
 }) {
   const color = barColor(driver);
   return (
@@ -176,9 +178,13 @@ function LimitWindows({
         return (
           <Fragment key={window.id}>
             <span className="flex min-w-0 items-center gap-2 text-xs">
-              <span className="truncate text-muted-foreground">{window.label}</span>
+              <span className="truncate text-muted-foreground">
+                {showRemaining && window.kind === "session" ? "5-hour" : window.label}
+              </span>
               <span className="ms-auto shrink-0 font-medium text-foreground tabular-nums">
-                {Math.round(window.usedPercent)}%
+                {showRemaining
+                  ? `${Math.round(100 - window.usedPercent)}% remaining`
+                  : `${Math.round(window.usedPercent)}%`}
               </span>
             </span>
             <WindowBar color={color} window={window} now={now} />
@@ -254,20 +260,27 @@ function ProviderLimits({
   const limits = provider.usageLimits;
   if (!limits) return null;
   const notice = limitsNotice(limits);
+  const timestampFormat = usePrimarySettings((settings) => settings.timestampFormat);
+  const plan = limits.plan ? codexPlanLabel(limits.plan) : undefined;
   return (
     <section className="flex flex-col gap-3">
       <AccountHeading
         driver={provider.driver}
         label={getDriverOption(provider.driver)?.label ?? String(provider.driver)}
         instanceLabel={providerLimitsLabel(provider, (driver) => getDriverOption(driver)?.label)}
-        plan={provider.auth.label}
+        plan={plan ?? provider.auth.label}
         email={provider.auth.email}
         accentColor={provider.accentColor}
       />
       {notice ? (
         <span className="text-xs text-muted-foreground">{notice}</span>
       ) : (
-        <LimitWindows driver={provider.driver} windows={limits.windows} now={now} />
+        <LimitWindows
+          driver={provider.driver}
+          windows={limits.windows}
+          now={now}
+          showRemaining={provider.driver === "codex"}
+        />
       )}
       {limits.resetCredits ? (
         <ResetCredits
@@ -277,8 +290,56 @@ function ProviderLimits({
           now={now}
         />
       ) : null}
+      {limits.credits ? <CreditsStatus credits={limits.credits} /> : null}
+      {limits.usageLimit ? (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span className="tabular-nums">
+            Usage-limit resets: {Math.round(limits.usageLimit.remainingPercent)}% remaining
+          </span>
+          <span>
+            Resets {formatUpcomingTimestamp(limits.usageLimit.resetsAt, timestampFormat, now)}
+          </span>
+        </div>
+      ) : null}
+      {provider.driver === "codex" ? (
+        <p className="text-xs text-muted-foreground">
+          Fast mode: available · enabled turns consume plan usage at an accelerated rate.
+        </p>
+      ) : null}
     </section>
   );
+}
+
+function codexPlanLabel(plan: string): string {
+  const labels: Record<string, string> = {
+    free: "ChatGPT Free",
+    go: "ChatGPT Go",
+    plus: "ChatGPT Plus",
+    pro: "ChatGPT Pro",
+    prolite: "ChatGPT Pro",
+    team: "ChatGPT Team",
+    business: "ChatGPT Business",
+    enterprise: "ChatGPT Enterprise",
+    edu: "ChatGPT Edu",
+  };
+  return labels[plan] ?? `ChatGPT ${plan}`;
+}
+
+function CreditsStatus({
+  credits,
+}: {
+  readonly credits: {
+    readonly hasCredits: boolean;
+    readonly unlimited: boolean;
+    readonly balance?: string | undefined;
+  };
+}) {
+  const status = credits.unlimited
+    ? "Unlimited credits"
+    : credits.hasCredits
+      ? `Credits available${credits.balance ? ` · ${credits.balance}` : ""}`
+      : "No credits available";
+  return <span className="text-xs text-muted-foreground">Account credits: {status}</span>;
 }
 
 const OUTCOME_TEXT: Record<ProviderConsumeResetCreditOutcome, string> = {

@@ -77,11 +77,19 @@ The most common defect in this repo is a change that works on the path you teste
 ## Dev servers
 
 - `vp i` installs. Worktrees get this from the t3.json setup script; if module resolution looks broken, it probably did not run.
+- Run `vp i` before focused tests, typechecks, or desktop packaging when dependencies are absent; do not substitute an ad-hoc dependency install that bypasses the workspace toolchain.
 - `vp run dev` starts server and web. In a worktree, state defaults to that worktree's gitignored `.t3`, which deliberately outranks an ambient `T3CODE_HOME` so you cannot land on shared state by accident. An explicit `--home-dir` still wins.
 - Ports derive from the worktree path and are stable across restarts, but read the real ones from the `[dev-runner]` line since occupied ports shift.
 - Sharing over the tailnet is three steps: run `vp run dev --share` in the background, wait for the `pairingUrl:` line in its output, paste that full URL (token included) in your reply. Do not wire up `tailscale serve` by hand for this, and do not open the URL yourself.
 - The web app requires pairing. Hand over the pairing URL, not the bare origin. A URL without its token is useless to whoever you gave it to. If the token got consumed, mint a fresh one with `node apps/server/src/bin.ts pair` — note it carries standard scopes, while the startup URL carries admin scopes (needed for Settings → Connections management).
 - Stop what you started, by the PID you tracked. See rule 1.
+
+## Local desktop package installs
+
+- After every new feature that changes the desktop app, rebuild the Linux AppImage and repackage `t3code-bin` before handing off the work. Run `vp run dist:desktop:linux`, refresh the AppImage copy used by the local `makepkg` build, and run `makepkg --noconfirm --force` without privilege.
+- Verify that the staged AppImage matches `release/T3-Code-<version>-x86_64.AppImage` before packaging. Provide the resulting `.pkg.tar.zst` path and the exact `sudo pacman -U` command, but do not install it automatically.
+- When replacing an installed Arch `t3code-bin` with a locally built package, close the app and back up `~/.t3/userdata` first. Package replacement must preserve that directory; never delete, reset, or migrate it unless explicitly requested.
+- Build the package without privilege. If installation requires `sudo pacman -U`, give the exact command to the user and have them run the privileged step themselves.
 
 ## Test data
 

@@ -19,6 +19,13 @@ const PREVIEW_PARTITION_PREFIX = "persist:t3code-preview-";
 const PREVIEW_EPHEMERAL_PARTITION_PREFIX = "t3code-preview-ephemeral-";
 const PROFILE_PARTITION_MARKER = "profile-";
 
+/** Remove Electron/product markers so sites identify the guest as Chromium. */
+export const normalizePreviewUserAgent = (userAgent: string): string =>
+  userAgent
+    .replace(/(?:Electron|t3code(?:\([^)]*\))?)\/[^\s]+/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
 export type BrowserSessionPartitionNamespace = "profile";
 
 // Permissions granted to preview web content. `clipboard-sanitized-write` is the
@@ -196,11 +203,7 @@ export const make = Effect.gen(function* BrowserSessionMake() {
       return Effect.try({
         try: () => {
           const browserSession = session.fromPartition(partition);
-          const userAgent = browserSession
-            .getUserAgent()
-            .replace(/Electron\/[\d.]+ /, "")
-            .replace(/\s*t3code\/[\d.]+/, "");
-          browserSession.setUserAgent(userAgent);
+          browserSession.setUserAgent(normalizePreviewUserAgent(browserSession.getUserAgent()));
           browserSession.setPermissionRequestHandler((_webContents, permission, callback) => {
             callback(ALLOWED_PREVIEW_PERMISSIONS.has(permission));
           });

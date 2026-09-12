@@ -1,7 +1,7 @@
 "use client";
 
 import type { ScopedThreadRef } from "@t3tools/contracts";
-import { PanelRightIcon, PictureInPicture2, XIcon } from "lucide-react";
+import { PanelRightIcon, PictureInPicture2 } from "lucide-react";
 import { type PointerEvent as ReactPointerEvent, useLayoutEffect, useRef, useState } from "react";
 
 import { BrowserSurfaceSlot } from "~/browser/BrowserSurfaceSlot";
@@ -63,10 +63,6 @@ export function ThreadPreviewMiniPlayer({ threadRef, tabId, bottomInset }: Props
     miniPlayer?.tabId === tabId && miniPlayer.size
       ? miniPlayer.size
       : PREVIEW_MINI_PLAYER_DEFAULT_SIZE;
-  const close = () => {
-    usePreviewMiniPlayerStore.getState().close(threadRef);
-  };
-
   const openInPanel = () => {
     usePreviewMiniPlayerStore.getState().close(threadRef);
     useRightPanelStore.getState().openBrowser(threadRef, tabId);
@@ -296,22 +292,6 @@ export function ThreadPreviewMiniPlayer({ threadRef, tabId, bottomInset }: Props
                 ? "Close separate window"
                 : "Pop into separate window"}
             </TooltipPopup>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label="Close floating preview"
-                  onPointerDown={(event) => event.stopPropagation()}
-                  onClick={close}
-                />
-              }
-            >
-              <XIcon />
-            </TooltipTrigger>
-            <TooltipPopup side="top">Close floating preview</TooltipPopup>
           </Tooltip>
         </div>
       </div>

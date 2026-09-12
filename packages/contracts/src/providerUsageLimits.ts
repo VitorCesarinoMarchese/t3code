@@ -48,6 +48,22 @@ export type ServerProviderResetCredits = typeof ServerProviderResetCredits.Type;
 export const ServerProviderUsageLimits = Schema.Struct({
   checkedAt: IsoDateTime,
   windows: ForwardCompatibleArray(ServerProviderUsageWindow),
+  /** Provider plan label and account credit state, when reported. */
+  plan: Schema.optional(TrimmedNonEmptyString),
+  credits: Schema.optional(
+    Schema.Struct({
+      hasCredits: Schema.Boolean,
+      unlimited: Schema.Boolean,
+      balance: Schema.optional(Schema.String),
+    }),
+  ),
+  /** Remaining usage-limit resets granted by the account spend controller. */
+  usageLimit: Schema.optional(
+    Schema.Struct({
+      remainingPercent: Schema.Number.check(Schema.isBetween({ minimum: 0, maximum: 100 })),
+      resetsAt: IsoDateTime,
+    }),
+  ),
   resetCredits: Schema.optional(ServerProviderResetCredits),
   unavailable: Schema.optional(
     Schema.Struct({
